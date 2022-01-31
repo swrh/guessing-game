@@ -18,6 +18,29 @@ StreamInterface::askString(const std::string_view &question)
 	return buffer_;
 }
 
+bool
+StreamInterface::askYesOrNot(const std::string_view &question)
+{
+	os_ << question << ' ' << std::flush;
+
+	do {
+		readString();
+
+		if (buffer_.size() == 0) {
+			return true;
+		}
+
+		const char c = buffer_[0];
+		if (c == 'n' || c == 'N') {
+			return false;
+		} else if (c == 'y' || c == 'Y') {
+			return true;
+		}
+	} while (true);
+
+	throw std::runtime_error("internal error");
+}
+
 void
 StreamInterface::readString()
 {

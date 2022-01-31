@@ -18,6 +18,7 @@ public:
 	StreamInterface(std::istream &is, std::ostream &os);
 
 	const std::string &askString(const std::string_view &question);
+	bool askYesOrNot(const std::string_view &question);
 
 private:
 	void readString();
