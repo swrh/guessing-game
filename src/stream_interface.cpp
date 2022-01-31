@@ -21,7 +21,15 @@ StreamInterface::askString(const std::string_view &question)
 void
 StreamInterface::readString()
 {
+	if (is_.eof()) {
+		throw std::runtime_error("end of file");
+	}
+
 	std::getline(is_, buffer_);
+
+	if (buffer_.size() == 0 && is_.eof()) {
+		throw std::runtime_error("end of file");
+	}
 }
 
 }
