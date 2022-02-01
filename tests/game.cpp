@@ -1,30 +1,83 @@
 #include "gg/game.hpp"
 
+#include <variant>
+
 #include <boost/algorithm/string/join.hpp>
 #include <boost/test/unit_test.hpp>
 
-void
-run(gg::Game &game, const std::vector<std::string> &questions, const std::vector<std::string> &answers)
+#include "gg/stream_interface.hpp"
+
+typedef std::variant<std::string, bool, nullptr_t> Answer;
+
+struct
+MockInterface
+: gg::UserInterface
 {
-	std::ostringstream os;
-	std::istringstream is;
+	const std::vector<Answer> &answers_;
+	std::vector<Answer>::const_iterator answersIt_;
+	std::vector<std::string> messages_;
 
-	for (const std::string &answer : answers) {
-		os << answer << '\n';
+	MockInterface(const std::vector<Answer> &answers)
+		: answers_{answers}
+		, answersIt_{answers_.begin()}
+	{
 	}
-	is.str(os.str());
-	os.str("");
 
-	gg::StreamInterface ui{is, os};
+	void
+	askOk(const std::string_view &s) override
+	{
+		messages_.push_back(std::string{s});
+		getAnswer<nullptr_t>();
+	}
+
+	const
+	std::string &askString(const std::string_view &s) override
+	{
+		messages_.push_back(std::string{s});
+		return getAnswer<std::string>();
+	}
+
+	bool
+	askYesOrNot(const std::string_view &s) override
+	{
+		messages_.push_back(std::string{s});
+		return getAnswer<bool>();
+	}
+
+	void
+	showMessage(const std::string_view &s) override
+	{
+		messages_.push_back(std::string{s});
+	}
+
+private:
+	template <typename T>
+	const T &
+	getAnswer()
+	{
+		if (answersIt_ == answers_.end()) {
+			throw std::runtime_error("end of answers");
+		}
+		const T *ptr = std::get_if<T>(&*answersIt_);
+		if (!ptr) {
+			throw std::runtime_error("answer has different type");
+		}
+		++answersIt_;
+		return *ptr;
+	}
+};
+
+void
+run(gg::Game &game, const std::vector<std::string> &questions, const std::vector<Answer> &answers)
+{
+	MockInterface ui{answers};
 
 	game.run(ui);
 
-	std::string data = boost::algorithm::join(questions, "");
-	BOOST_REQUIRE_EQUAL(os.str(), data);
+	BOOST_REQUIRE_EQUAL_COLLECTIONS(ui.messages_.begin(), ui.messages_.end(),
+			questions.begin(), questions.end());
 
-	BOOST_CHECK_MESSAGE(!is.eof(), "stdin reached end of file prematurely");
-	is.get();
-	BOOST_CHECK_MESSAGE(is.eof(), "game did not process all the input data");
+	BOOST_REQUIRE_MESSAGE(ui.answersIt_ == answers.end(), "game.run() did not process all answers");
 }
 
 BOOST_AUTO_TEST_CASE(Game_run_throws_exception_on_input_end_of_file) {
@@ -43,18 +96,19 @@ BOOST_AUTO_TEST_CASE(Game_run_throws_exception_on_input_end_of_file) {
 BOOST_AUTO_TEST_CASE(Game_run_has_default_shark) {
 	gg::Game game;
 
-	std::vector<std::string> questions, answers;
+	std::vector<std::string> questions;
+	std::vector<Answer> answers;
 
 	questions = {
-		{"Think about an animal... "},
-		{"Does the animal that you thought about lives in water? [Y/n] "},
-		{"Is the animal that you thought about a shark? [Y/n] "},
-		{"I win again!\n"},
+		{"Think about an animal..."},
+		{"Does the animal that you thought about lives in water?"},
+		{"Is the animal that you thought about a shark?"},
+		{"I win again!"},
 	};
 	answers = {
-		{""},
-		{""},
-		{""},
+		{nullptr},
+		{true},
+		{true},
 	};
 
 	run(game, questions, answers);
@@ -63,18 +117,19 @@ BOOST_AUTO_TEST_CASE(Game_run_has_default_shark) {
 BOOST_AUTO_TEST_CASE(Game_run_has_default_monkey) {
 	gg::Game game;
 
-	std::vector<std::string> questions, answers;
+	std::vector<std::string> questions;
+	std::vector<Answer> answers;
 
 	questions = {
-		{"Think about an animal... "},
-		{"Does the animal that you thought about lives in water? [Y/n] "},
-		{"Is the animal that you thought about a monkey? [Y/n] "},
-		{"I win again!\n"},
+		{"Think about an animal..."},
+		{"Does the animal that you thought about lives in water?"},
+		{"Is the animal that you thought about a monkey?"},
+		{"I win again!"},
 	};
 	answers = {
-		{""},
-		{"n"},
-		{""},
+		{nullptr},
+		{false},
+		{true},
 	};
 
 	run(game, questions, answers);
@@ -83,19 +138,20 @@ BOOST_AUTO_TEST_CASE(Game_run_has_default_monkey) {
 BOOST_AUTO_TEST_CASE(Game_run_learns_new_animals) {
 	gg::Game game;
 
-	std::vector<std::string> questions, answers;
+	std::vector<std::string> questions;
+	std::vector<Answer> answers;
 
 	questions = {
-		{"Think about an animal... "},
-		{"Does the animal that you thought about lives in water? [Y/n] "},
-		{"Is the animal that you thought about a monkey? [Y/n] "},
-		{"What was the animal that you thought about? "},
-		{"A parrot _________ but a monkey does not (Fill it with an animal trait, like 'lives in water'). "},
+		{"Think about an animal..."},
+		{"Does the animal that you thought about lives in water?"},
+		{"Is the animal that you thought about a monkey?"},
+		{"What was the animal that you thought about?"},
+		{"A parrot _________ but a monkey does not (Fill it with an animal trait, like 'lives in water')."},
 	};
 	answers = {
-		{""},
-		{"n"},
-		{"n"},
+		{nullptr},
+		{false},
+		{false},
 		{"parrot"},
 		{"flies"},
 	};
@@ -103,17 +159,17 @@ BOOST_AUTO_TEST_CASE(Game_run_learns_new_animals) {
 	run(game, questions, answers);
 
 	questions = {
-		{"Think about an animal... "},
-		{"Does the animal that you thought about lives in water? [Y/n] "},
-		{"Does the animal that you thought about flies? [Y/n] "},
-		{"Is the animal that you thought about a parrot? [Y/n] "},
-		{"I win again!\n"},
+		{"Think about an animal..."},
+		{"Does the animal that you thought about lives in water?"},
+		{"Does the animal that you thought about flies?"},
+		{"Is the animal that you thought about a parrot?"},
+		{"I win again!"},
 	};
 	answers = {
-		{""},
-		{"n"},
-		{"y"},
-		{"y"},
+		{nullptr},
+		{false},
+		{true},
+		{true},
 	};
 
 	run(game, questions, answers);

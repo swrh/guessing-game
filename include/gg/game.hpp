@@ -1,8 +1,6 @@
 #pragma once
 
-#include <iostream>
-
-#include "gg/stream_interface.hpp"
+#include "gg/user_interface.hpp"
 
 namespace gg {
 
@@ -10,7 +8,7 @@ class
 Game
 {
 public:
-	void run(StreamInterface &ui);
+	void run(UserInterface &ui);
 };
 
 }

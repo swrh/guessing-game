@@ -1,12 +1,14 @@
 #pragma once
 
 #include <iostream>
-#include <string>
+
+#include "gg/user_interface.hpp"
 
 namespace gg {
 
 class
 StreamInterface
+: public UserInterface
 {
 private:
 	std::istream &is_;
@@ -17,11 +19,11 @@ private:
 public:
 	StreamInterface(std::istream &is, std::ostream &os);
 
-	void askOk(const std::string_view &question);
-	const std::string &askString(const std::string_view &question);
-	bool askYesOrNot(const std::string_view &question);
+	void askOk(const std::string_view &question) override;
+	const std::string &askString(const std::string_view &question) override;
+	bool askYesOrNot(const std::string_view &question) override;
 
-	void showMessage(const std::string_view &message);
+	void showMessage(const std::string_view &message) override;
 
 private:
 	void readString();
