@@ -18,21 +18,37 @@ Game::run(UserInterface &ui)
 	ui.askOk("Think about an animal...");
 
 	bool answerYes;
-	std::shared_ptr<Node> parent, child = root_;
+	std::shared_ptr<Node> trait, animal = root_;
 
 	do {
-		parent = child;
-		answerYes = ui.askYesOrNot("Does the animal that you thought about " + parent->getName() + "?");
+		trait = std::move(animal);
+		answerYes = ui.askYesOrNot("Does the animal that you thought about " + trait->getName() + "?");
 		if (answerYes) {
-			child = parent->getLeft();
+			animal = trait->getLeft();
 		} else {
-			child = parent->getRight();
+			animal = trait->getRight();
 		}
-	} while (child->hasLeafs());
+	} while (animal->hasLeafs());
 
-	if (ui.askYesOrNot("Is the animal that you thought about a " + child->getName() + "?")) {
+	if (ui.askYesOrNot("Is the animal that you thought about a " + animal->getName() + "?")) {
 		ui.showMessage("I win again!");
 		return;
+	}
+
+	std::string_view response;
+
+	response = ui.askString("What was the animal that you thought about?");
+	auto newAnimal = std::make_shared<Node>(std::string{response});
+
+	response = ui.askString("A " + newAnimal->getName() + " _________ but a " + animal->getName() + " does not (Fill it with an animal trait, like '" + root_->getName() + "').");
+	auto newTrait = std::make_shared<Node>(std::string{response});
+
+	newTrait->setLeafs(std::move(newAnimal), std::move(animal));
+
+	if (answerYes) {
+		trait->setLeft(std::move(newTrait));
+	} else {
+		trait->setRight(std::move(newTrait));
 	}
 }
 
