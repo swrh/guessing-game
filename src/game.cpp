@@ -6,25 +6,34 @@ using gg::Game;
 
 namespace gg {
 
+Game::Game()
+{
+	root_ = std::make_shared<Node>("lives in water");
+	root_->setLeafs(std::make_shared<Node>("shark"), std::make_shared<Node>("monkey"));
+}
+
 void
 Game::run(UserInterface &ui)
 {
 	ui.askOk("Think about an animal...");
 
-	std::string animal;
-	bool yes;
+	bool answerYes;
+	std::shared_ptr<Node> parent, child = root_;
 
-	yes = ui.askYesOrNot("Does the animal that you thought about lives in water?");
+	do {
+		parent = child;
+		answerYes = ui.askYesOrNot("Does the animal that you thought about " + parent->getName() + "?");
+		if (answerYes) {
+			child = parent->getLeft();
+		} else {
+			child = parent->getRight();
+		}
+	} while (child->hasLeafs());
 
-	if (yes) {
-		animal = "shark";
-	} else {
-		animal = "monkey";
+	if (ui.askYesOrNot("Is the animal that you thought about a " + child->getName() + "?")) {
+		ui.showMessage("I win again!");
+		return;
 	}
-
-	ui.askYesOrNot("Is the animal that you thought about a " + animal + "?");
-
-	ui.showMessage("I win again!");
 }
 
 }
