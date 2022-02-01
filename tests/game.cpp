@@ -7,7 +7,7 @@
 
 #include "gg/stream_interface.hpp"
 
-typedef std::variant<std::string, bool, nullptr_t> Answer;
+typedef std::variant<const char *, bool, nullptr_t> Answer;
 
 struct
 MockInterface
@@ -30,11 +30,11 @@ MockInterface
 		getAnswer<nullptr_t>();
 	}
 
-	const
-	std::string &askString(const std::string_view &s) override
+	std::string_view
+	askString(const std::string_view &s) override
 	{
 		messages_.push_back(std::string{s});
-		return getAnswer<std::string>();
+		return getAnswer<const char *>();
 	}
 
 	bool

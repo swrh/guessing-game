@@ -17,7 +17,7 @@ StreamInterface::askOk(const std::string_view &question)
 	readString();
 }
 
-const std::string &
+std::string_view
 StreamInterface::askString(const std::string_view &question)
 {
 	os_ << question << ' ' << std::flush;
