@@ -29,12 +29,69 @@ BOOST_AUTO_TEST_CASE(Node_hasLeafs_and_setLeafs_works) {
 	BOOST_REQUIRE(!base->getRight()->hasLeafs());
 }
 
-BOOST_AUTO_TEST_CASE(Node_setLeafs_throws_exception_when_needed) {
-	std::shared_ptr<gg::Node> base = std::make_shared<gg::Node>("base");
-	std::shared_ptr<gg::Node> left = std::make_shared<gg::Node>("left");
-	std::shared_ptr<gg::Node> right;
+BOOST_AUTO_TEST_CASE(Node_setLeafs_setLeft_and_setRight_moves) {
+	auto base = std::make_shared<gg::Node>("base");
+	auto left = std::make_shared<gg::Node>("left");
+	auto right = std::make_shared<gg::Node>("right");
 
-	BOOST_CHECK_EXCEPTION(base->setLeafs(std::move(left), std::move(right)), std::runtime_error, [](const std::runtime_error &e) {
+	base->setLeafs(std::move(left), std::move(right));
+	BOOST_REQUIRE(!left);
+	BOOST_REQUIRE(!right);
+
+	left = std::make_shared<gg::Node>("left1");
+	base->setLeft(std::move(left));
+	BOOST_REQUIRE(!left);
+
+	right = std::make_shared<gg::Node>("right1");
+	base->setLeft(std::move(right));
+	BOOST_REQUIRE(!right);
+}
+
+BOOST_AUTO_TEST_CASE(Node_setLeafs_setLeft_and_setRight_throws_exceptions) {
+	auto base = std::make_shared<gg::Node>("base");
+	auto left = std::make_shared<gg::Node>("left");
+	auto right = std::make_shared<gg::Node>("right");
+
+	BOOST_CHECK_EXCEPTION(base->setLeft(nullptr), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "null argument";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setRight(nullptr), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "null argument";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setLeafs(left, nullptr), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "one of the arguments is null and the other is not";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setLeafs(nullptr, right), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "one of the arguments is null and the other is not";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setLeft(left), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "right is null";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setRight(right), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "left is null";
+		});
+
+	base->setLeafs(std::move(left), std::move(right));
+
+	left = std::make_shared<gg::Node>("left");
+	right = std::make_shared<gg::Node>("right");
+
+	base->setLeft(left);
+	BOOST_CHECK_EQUAL(left, base->getLeft());
+
+	base->setRight(right);
+	BOOST_CHECK_EQUAL(right, base->getRight());
+
+	BOOST_CHECK_EXCEPTION(base->setLeft(nullptr), std::runtime_error, [](const std::runtime_error &e) {
+			return std::string(e.what()) == "null argument";
+		});
+
+	BOOST_CHECK_EXCEPTION(base->setRight(nullptr), std::runtime_error, [](const std::runtime_error &e) {
 			return std::string(e.what()) == "null argument";
 		});
 }

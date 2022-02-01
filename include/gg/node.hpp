@@ -20,8 +20,11 @@ public:
 	bool hasLeafs() const;
 	void setLeafs(std::shared_ptr<Node> left, std::shared_ptr<Node> right);
 
-	const std::shared_ptr<Node> &getLeft();
-	const std::shared_ptr<Node> &getRight();
+	void setLeft(std::shared_ptr<Node> left);
+	const std::shared_ptr<Node> &getLeft() const;
+
+	void setRight(std::shared_ptr<Node> right);
+	const std::shared_ptr<Node> &getRight() const;
 };
 
 }
