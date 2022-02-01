@@ -10,6 +10,13 @@ StreamInterface::StreamInterface(std::istream &is, std::ostream &os)
 {
 }
 
+void
+StreamInterface::askOk(const std::string_view &question)
+{
+	os_ << question << ' ' << std::flush;
+	readString();
+}
+
 const std::string &
 StreamInterface::askString(const std::string_view &question)
 {
@@ -39,6 +46,12 @@ StreamInterface::askYesOrNot(const std::string_view &question)
 	} while (true);
 
 	throw std::runtime_error("internal error");
+}
+
+void
+StreamInterface::showMessage(const std::string_view &message)
+{
+	os_ << message << '\n' << std::flush;
 }
 
 void
