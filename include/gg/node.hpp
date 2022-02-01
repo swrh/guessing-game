@@ -10,7 +10,7 @@ Node
 {
 private:
 	const std::string name_;
-	std::unique_ptr<Node> left_, right_;
+	std::shared_ptr<Node> left_, right_;
 
 public:
 	Node(std::string name);
@@ -18,10 +18,10 @@ public:
 	const std::string &getName() const;
 
 	bool hasLeafs() const;
-	void setLeafs(std::unique_ptr<Node> &&left, std::unique_ptr<Node> &&right);
+	void setLeafs(std::shared_ptr<Node> left, std::shared_ptr<Node> right);
 
-	std::unique_ptr<Node> &getLeft();
-	std::unique_ptr<Node> &getRight();
+	const std::shared_ptr<Node> &getLeft();
+	const std::shared_ptr<Node> &getRight();
 };
 
 }

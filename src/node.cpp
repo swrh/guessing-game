@@ -22,7 +22,7 @@ Node::hasLeafs() const
 }
 
 void
-Node::setLeafs(std::unique_ptr<Node> &&left, std::unique_ptr<Node> &&right)
+Node::setLeafs(std::shared_ptr<Node> left, std::shared_ptr<Node> right)
 {
 	if (!left || !right) {
 		throw std::runtime_error("null argument");
@@ -32,13 +32,13 @@ Node::setLeafs(std::unique_ptr<Node> &&left, std::unique_ptr<Node> &&right)
 	right_ = std::move(right);
 }
 
-std::unique_ptr<Node> &
+const std::shared_ptr<Node> &
 Node::getLeft()
 {
 	return left_;
 }
 
-std::unique_ptr<Node> &
+const std::shared_ptr<Node> &
 Node::getRight()
 {
 	return right_;
