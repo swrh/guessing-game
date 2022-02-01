@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+#include "gg/game.hpp"
+#include "gg/stream_interface.hpp"
+
 extern const char *__progname;
 
 using gg::Application;
@@ -26,8 +29,13 @@ Application::parseArguments(int argc, const char *argv[])
 bool
 Application::run()
 {
-	std::cout << "Hello, world!\n";
-	return true;
+	Game game;
+
+	StreamInterface ui{std::cin, std::cout};
+
+	for (;;) {
+		game.run(ui);
+	}
 }
 
 }
