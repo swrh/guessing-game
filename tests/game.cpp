@@ -80,6 +80,13 @@ run(gg::Game &game, const std::vector<std::string> &questions, const std::vector
 	BOOST_REQUIRE_MESSAGE(ui.answersIt_ == answers.end(), "game.run() did not process all answers");
 }
 
+void
+pushBack(std::vector<std::string> &questions, std::vector<Answer> &answers, std::string question, const Answer &answer)
+{
+	questions.push_back(std::move(question));
+	answers.push_back(answer);
+}
+
 BOOST_AUTO_TEST_CASE(Game_run_throws_exception_on_input_end_of_file) {
 	gg::Game game;
 
@@ -141,36 +148,73 @@ BOOST_AUTO_TEST_CASE(Game_run_learns_new_animals) {
 	std::vector<std::string> questions;
 	std::vector<Answer> answers;
 
-	questions = {
-		{"Think about an animal..."},
-		{"Does the animal that you thought about lives in water?"},
-		{"Is the animal that you thought about a monkey?"},
-		{"What was the animal that you thought about?"},
-		{"A parrot _________ but a monkey does not (Fill it with an animal trait, like 'lives in water')."},
-	};
-	answers = {
-		{nullptr},
-		{false},
-		{false},
-		{"parrot"},
-		{"flies"},
-	};
-
+	// Create parrot
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", false);
+	pushBack(questions, answers, "Is the animal that you thought about a monkey?", false);
+	pushBack(questions, answers, "What was the animal that you thought about?", "parrot");
+	pushBack(questions, answers, "A parrot _________ but a monkey does not (Fill it with an animal trait, like 'lives in water').", "flies");
 	run(game, questions, answers);
 
-	questions = {
-		{"Think about an animal..."},
-		{"Does the animal that you thought about lives in water?"},
-		{"Does the animal that you thought about flies?"},
-		{"Is the animal that you thought about a parrot?"},
-		{"I win again!"},
-	};
-	answers = {
-		{nullptr},
-		{false},
-		{true},
-		{true},
-	};
+	// Test parrot
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", false);
+	pushBack(questions, answers, "Does the animal that you thought about flies?", true);
+	pushBack(questions, answers, "Is the animal that you thought about a parrot?", true);
+	questions.push_back("I win again!");
+	run(game, questions, answers);
 
+	// Create whale
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", true);
+	pushBack(questions, answers, "Is the animal that you thought about a shark?", false);
+	pushBack(questions, answers, "What was the animal that you thought about?", "whale");
+	pushBack(questions, answers, "A whale _________ but a shark does not (Fill it with an animal trait, like 'lives in water').", "blows");
+	run(game, questions, answers);
+
+	// Test whale
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", true);
+	pushBack(questions, answers, "Does the animal that you thought about blows?", true);
+	pushBack(questions, answers, "Is the animal that you thought about a whale?", true);
+	questions.push_back("I win again!");
+	run(game, questions, answers);
+
+	// Test shark
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", true);
+	pushBack(questions, answers, "Does the animal that you thought about blows?", false);
+	pushBack(questions, answers, "Is the animal that you thought about a shark?", true);
+	questions.push_back("I win again!");
+	run(game, questions, answers);
+
+	// Test monkey
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", false);
+	pushBack(questions, answers, "Does the animal that you thought about flies?", false);
+	pushBack(questions, answers, "Is the animal that you thought about a monkey?", true);
+	questions.push_back("I win again!");
+	run(game, questions, answers);
+
+	// Test parrot
+	questions.clear();
+	answers.clear();
+	pushBack(questions, answers, "Think about an animal...", nullptr);
+	pushBack(questions, answers, "Does the animal that you thought about lives in water?", false);
+	pushBack(questions, answers, "Does the animal that you thought about flies?", true);
+	pushBack(questions, answers, "Is the animal that you thought about a parrot?", true);
+	questions.push_back("I win again!");
 	run(game, questions, answers);
 }
